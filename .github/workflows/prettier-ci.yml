@@ -1,33 +1,21 @@
-name: Prettier Code Format Check
+name: Continuous Integration
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+  push:
+    branches:
+      - main
 
 jobs:
-  prettier-check:
+  prettier:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18.13'
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: npm install
-
-    - name: Check code formatting with Prettier
-      run: npx prettier --check .
-
-    - name: If necessary, run Prettier
-      run: |
-        if ! npx prettier --check .; then
-          npx prettier --write .
-          echo "Files have been formatted with Prettier. Please review and commit the changes."
-          exit 1
-        fi
+      - name: Prettify code
+        uses: creyD/prettier_action@v4.3
+        with:
+          prettier_options: --write **/*.{js,jsx,ts,tsx,css,scss,sass,html,md,vue}
+          dry: true  # Set to false to auto-fix and commit changes
