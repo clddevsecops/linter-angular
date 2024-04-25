@@ -22,7 +22,7 @@ jobs:
       run: npm install
 
     - name: Lint
-      run: npm run lint -- --format json --output-file eslint-report.json || echo "Linting issues found"
+      run: npm run lint -- --format json --output-file eslint-report.json
       
     - name: Upload ESLint Report
       if: always()
