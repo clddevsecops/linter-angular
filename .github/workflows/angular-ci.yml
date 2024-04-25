@@ -12,16 +12,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '18'
+        node-version: '18.13'
 
     - name: Install dependencies
       run: npm install
 
     - name: Build
-      run: npm run build -- --prod
+      run: npm run build -- --configuration production
 
     - name: Run tests
       run: npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
