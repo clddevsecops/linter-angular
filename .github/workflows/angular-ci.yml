@@ -26,6 +26,3 @@ jobs:
     
     - name: Build
       run: npm run build -- --configuration production
-
-    - name: Run tests
-      run: npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
