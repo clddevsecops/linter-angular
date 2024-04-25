@@ -16,7 +16,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "17.2.1",
-    "@angular-eslint/schematics: latest",
+    "@angular-eslint/schematics": "latest",
     "@angular/common": "17.2.1",
     "@angular/compiler": "17.2.1",
     "@angular/core": "17.2.1",
@@ -30,6 +30,9 @@
     "rxjs": "^7.4.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
+    "@angular-eslint/eslint-plugin": "latest",
+    "@angular-eslint/eslint-plugin-template": "latest",
+    "@angular-eslint/template-parser": "latest"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.2.0",
