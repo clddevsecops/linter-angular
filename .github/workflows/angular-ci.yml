@@ -22,7 +22,14 @@ jobs:
       run: npm install
 
     - name: Lint
-      run: npm run lint || echo "Linting issues found"
-    
+      run: npm run lint -- --format json --output-file eslint-report.json || echo "Linting issues found"
+      
+    - name: Upload ESLint Report
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: eslint-report
+        path: eslint-report.json
+
     - name: Build
       run: npm run build -- --configuration production
