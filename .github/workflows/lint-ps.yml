@@ -1,0 +1,41 @@
+name: Prettier Format Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  prettier-format:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'  # Specify the Node.js version you need
+
+    - name: Install Prettier
+      run: npm install --save-dev prettier
+      shell: powershell
+
+    - name: Run Prettier
+      run: npx prettier --write "NgApps/**/*.{js,jsx,ts,tsx,css,scss,sass,html,md,vue}"
+      shell: powershell
+
+    - name: Check for changes
+      run: |
+        $gitStatus = git status --porcelain
+        if (-not $gitStatus) {
+          Write-Output "No changes detected."
+        } else {
+          Write-Output "Formatting issues found and fixed. Please review changes."
+          git add .
+          git commit -m "Apply Prettier formatting"
+          git push
+        }
+      shell: powershell
