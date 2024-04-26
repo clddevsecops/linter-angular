@@ -24,7 +24,7 @@ jobs:
       shell: powershell
 
     - name: Run Prettier
-      run: npx prettier --write "NgApps/**/*.{js,jsx,ts,tsx,css,scss,sass,html,md,vue}"
+      run: npx prettier --write "**/*.{js,jsx,ts,tsx,css,scss,sass,html,md,vue}"
       shell: powershell
 
     - name: Check for changes
