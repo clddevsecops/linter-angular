@@ -18,4 +18,4 @@ jobs:
         uses: creyD/prettier_action@v4.3
         with:
           prettier_options: --write **/*.{js,jsx,ts,tsx,css,scss,sass,html,md,vue}
-          dry: true  # Set to false to auto-fix and commit changes
+          dry: false  # Set to false to auto-fix and commit changes
