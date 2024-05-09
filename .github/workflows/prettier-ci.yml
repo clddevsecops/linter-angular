@@ -12,10 +12,32 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
 
-      - name: Prettify code
+      - name: Get changed files
+        id: files
+        run: |
+          # Using || true to ensure the script does not exit with an error if no files are found
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || true)
+          FILES="$(echo $FILES | tr '\n' ' ')"
+          echo "FILES=$FILES" >> $GITHUB_ENV
+          echo "Changed Files: $FILES"
+          if [ -z "$FILES" ]; then
+            echo "No changed files to format."
+            exit 0
+          fi
+        shell: /usr/bin/bash -e {0}
+
+      - name: Run Prettier
+        if: env.FILES != ''
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write **/*.{js,jsx,ts,tsx,css,scss,sass,html,md,vue}
-          dry: false  # Set to false to auto-fix and commit changes
+          prettier_options: --write ${{ env.FILES }}
+          dry: false
+
+      - name: Fail Notice
+        if: failure()
+        run: echo "Prettier formatting failed, check the logs for details."
