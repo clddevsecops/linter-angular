@@ -20,19 +20,19 @@ jobs:
       - name: Get changed files
         id: files
         run: |
-          # Using || true to ensure the script does not exit with an error if no files are found
-          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || true)
+          # Collect files changed
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
           FILES="$(echo $FILES | tr '\n' ' ')"
           echo "FILES=$FILES" >> $GITHUB_ENV
           echo "Changed Files: $FILES"
           if [ -z "$FILES" ]; then
+            echo "::set-output name=skipped::true"
             echo "No changed files to format."
-            exit 0
           fi
         shell: /usr/bin/bash -e {0}
 
       - name: Run Prettier
-        if: env.FILES != ''
+        if: env.FILES != '' && steps.files.outputs.skipped != 'true'
         uses: creyD/prettier_action@v4.3
         with:
           prettier_options: --write ${{ env.FILES }}
