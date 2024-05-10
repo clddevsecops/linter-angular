@@ -22,12 +22,11 @@ jobs:
         run: |
           # Collect files changed
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
-          FILES="$(echo $FILES | tr '\n' ' ')"
           echo "FILES=$FILES" >> $GITHUB_ENV
           echo "Changed Files: $FILES"
           if [ -z "$FILES" ]; then
-            echo "::set-output name=skipped::true"
             echo "No changed files to format."
+            echo "::set-output name=skipped::true"
           fi
         shell: /usr/bin/bash -e {0}
 
