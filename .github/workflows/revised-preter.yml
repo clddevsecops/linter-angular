@@ -34,7 +34,7 @@ jobs:
 
       - name: Debug output of FILES
         if: ${{ needs.prettier.outputs.has_files == 'true' }}
-        run: echo "Files to be formatted: ${{ needs.prettier.outputs.files }}"
+        run: echo "Files to be formatted:" ${{ needs.prettier.outputs.files }}
 
       - name: Run Prettier
         if: ${{ needs.prettier.outputs.has_files == 'true' }}
