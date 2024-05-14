@@ -25,8 +25,9 @@ jobs:
             echo "Changed Files: None"
             echo "has_files=false" >> $GITHUB_ENV
           else
-            echo "Changed Files: $FILES"
-            echo "FILES=$FILES" >> $GITHUB_ENV
+            FILE_LIST=$(echo "$FILES" | tr '\n' ' ' | sed 's/ /, /g')
+            echo "Changed Files: $FILE_LIST"
+            echo "FILES=$FILE_LIST" >> $GITHUB_ENV
             echo "has_files=true" >> $GITHUB_ENV
           fi
         shell: bash
@@ -41,7 +42,7 @@ jobs:
         if: env.has_files == 'true'
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write ${{ env.FILES }}
+          prettier_options: --write "${{ env.FILES }}"
           dry: false
 
       - name: Fail Notice
