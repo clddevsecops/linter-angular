@@ -8,9 +8,6 @@ on:
 jobs:
   prettier:
     runs-on: ubuntu-latest
-    outputs:
-      files: ${{ steps.files.outputs.files }}
-      has_files: ${{ steps.files.outputs.has_files }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,25 +19,27 @@ jobs:
         id: files
         run: |
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
-          echo "::set-output name=files::$FILES"
           if [ -z "$FILES" ]; then
             echo "Changed Files: None"
-            echo "::set-output name=has_files::false"
+            echo "has_files=false" >> $GITHUB_ENV
           else
             echo "Changed Files: $FILES"
-            echo "::set-output name=has_files::true"
+            echo "FILES=$FILES" >> $GITHUB_ENV
+            echo "has_files=true" >> $GITHUB_ENV
           fi
         shell: bash
 
       - name: Debug output of FILES
-        if: ${{ needs.prettier.outputs.has_files == 'true' }}
-        run: echo "Files to be formatted:" ${{ needs.prettier.outputs.files }}
+        if: env.has_files == 'true'
+        run: |
+          echo "Files to be formatted:"
+          cat $GITHUB_ENV
 
       - name: Run Prettier
-        if: ${{ needs.prettier.outputs.has_files == 'true' }}
+        if: env.has_files == 'true'
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write ${{ needs.prettier.outputs.files }}
+          prettier_options: --write ${{ env.FILES }}
           dry: false
 
       - name: Fail Notice
