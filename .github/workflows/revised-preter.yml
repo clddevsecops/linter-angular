@@ -20,29 +20,29 @@ jobs:
       - name: Get changed files
         id: files
         run: |
+          # Collect the changed files in the 'src/' directory that match specific extensions
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
-          if [ -z "$FILES" ]; then
-            echo "Changed Files: None"
-            echo "has_files=false" >> $GITHUB_ENV
+          # Prepare FILES for output, removing extra characters and ensuring it's a space-separated string
+          FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
+          echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
+          if [ -z "$FILES_CLEANED" ]; then
+            echo "No files to format."
+            echo "::set-output name=has_files::false"
           else
-            FILE_LIST=$(echo "$FILES" | tr '\n' ' ' | xargs)
-            echo "Changed Files: $FILE_LIST"
-            echo "FILES=$FILE_LIST" >> $GITHUB_ENV
-            echo "has_files=true" >> $GITHUB_ENV
+            echo "Files to be formatted: $FILES_CLEANED"
+            echo "::set-output name=has_files::true"
           fi
-        shell: bash
 
       - name: Debug output of FILES
-        if: env.has_files == 'true'
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          echo "Files to be formatted:"
-          echo "${{ env.FILES }}"
+          echo "Files to be formatted: ${{ env.FILES }}"
 
       - name: Run Prettier
-        if: env.has_files == 'true'
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write "${{ env.FILES }}"
+          prettier_options: --write ${{ env.FILES }}
           dry: false
 
       - name: Fail Notice
