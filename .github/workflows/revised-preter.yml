@@ -2,9 +2,12 @@ name: Continuous Prettier
 
 on:
   pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
+
 jobs:
   prettier:
     runs-on: ubuntu-latest
@@ -44,5 +47,3 @@ jobs:
       - name: Fail Notice
         if: failure()
         run: echo "Prettier formatting failed, check the logs for details."
-
-  
