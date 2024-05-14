@@ -21,7 +21,7 @@ jobs:
       - name: Get changed files
         id: files
         run: |
-          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'NgApps/shell/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
           echo "::set-output name=files::$FILES"
           if [ -z "$FILES" ]; then
             echo "Changed Files: None"
