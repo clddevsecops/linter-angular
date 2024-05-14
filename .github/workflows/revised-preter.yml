@@ -1,0 +1,48 @@
+name: Continuous Prettier
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Get changed files
+        id: files
+        run: |
+          # Collect files changed
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'NgApps/shell/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
+          FILES="$(echo $FILES | tr '\n' ' ')"
+          echo "FILES=$FILES" >> $GITHUB_ENV
+          if [ -z "$FILES" ]; then
+            echo "Changed Files: None"
+            echo "has_files=false" >> $GITHUB_ENV
+          else
+            echo "Changed Files: $FILES"
+            echo "has_files=true" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: Debug output of FILES
+        run: echo "Files to be formatted: ${{ env.FILES }}"
+
+      - name: Run Prettier
+        if: env.has_files == 'true'
+        uses: creyD/prettier_action@v4.3
+        with:
+          prettier_options: --write ${{ env.FILES }}
+          dry: false
+
+      - name: Fail Notice
+        if: failure()
+        run: echo "Prettier formatting failed, check the logs for details."
+
+  
