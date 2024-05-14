@@ -88,7 +88,6 @@ export default class AuthComponent implements OnInit {
       },
 
 
-      
     });
   }
 }
