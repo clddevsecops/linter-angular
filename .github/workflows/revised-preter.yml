@@ -1,3 +1,10 @@
+name: Continuous Integration revised
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 jobs:
   prettier:
     runs-on: ubuntu-latest
