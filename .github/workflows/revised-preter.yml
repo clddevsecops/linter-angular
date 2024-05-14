@@ -24,13 +24,13 @@ jobs:
 
       - name: Debug output of FILES
         if: env.has_files == 'true'
-        run: echo "Files to be formatted: $FILES"
+        run: echo "Files to be formatted: ${{ env.FILES }}"
 
       - name: Run Prettier
         if: env.has_files == 'true'
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write "${{ env.FILES }}"
+          prettier_options: --write ${{ env.FILES }}
           dry: false
 
       - name: Fail Notice
