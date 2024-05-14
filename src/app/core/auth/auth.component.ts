@@ -87,7 +87,6 @@ export default class AuthComponent implements OnInit {
         this.isSubmitting = false;
       },
 
-
     });
   }
 }

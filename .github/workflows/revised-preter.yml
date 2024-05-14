@@ -25,7 +25,7 @@ jobs:
             echo "Changed Files: None"
             echo "has_files=false" >> $GITHUB_ENV
           else
-            FILE_LIST=$(echo "$FILES" | tr '\n' ' ' | sed 's/ /, /g')
+            FILE_LIST=$(echo "$FILES" | tr '\n' ' ' | xargs)
             echo "Changed Files: $FILE_LIST"
             echo "FILES=$FILE_LIST" >> $GITHUB_ENV
             echo "has_files=true" >> $GITHUB_ENV
@@ -36,7 +36,7 @@ jobs:
         if: env.has_files == 'true'
         run: |
           echo "Files to be formatted:"
-          cat $GITHUB_ENV
+          echo "${{ env.FILES }}"
 
       - name: Run Prettier
         if: env.has_files == 'true'
