@@ -47,14 +47,11 @@ export const routes: Routes = [
           import("./features/article/pages/editor/editor.component"),
         canActivate: [() => inject(UserService).isAuthenticated],
       },
-        ],
-              },
+    ],
+  },
   {
     path: "article/:slug",
     loadComponent: () =>
       import("./features/article/pages/article/article.component"),
   },
-
-
-  
 ];
