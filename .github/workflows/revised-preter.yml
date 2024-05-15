@@ -27,12 +27,10 @@ jobs:
           echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
           if [ -z "$FILES_CLEANED" ]; then
             echo "No files to format."
-            #echo "::set-output name=has_files::false"
-            echo has_files=false" >> $GITHUB_OUTPUT
+            echo "has_files=false" >> $GITHUB_OUTPUT
           else
             echo "Files to be formatted: $FILES_CLEANED"
-            #echo "::set-output name=has_files::true"
-            echo has_files=true" >> $GITHUB_OUTPUT
+            echo "has_files=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Debug output of FILES
