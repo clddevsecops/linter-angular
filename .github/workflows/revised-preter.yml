@@ -5,10 +5,8 @@ on:
   push:
     branches:
       - main
-
 permissions:
   contents: write  # This line gives the workflow write permissions
-
 jobs:
   prettier:
     runs-on: ubuntu-latest
@@ -29,23 +27,24 @@ jobs:
           echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
           if [ -z "$FILES_CLEANED" ]; then
             echo "No files to format."
-            echo "has_files=false" >> $GITHUB_ENV
+            #echo "::set-output name=has_files::false"
+            echo has_files=false" >> $GITHUB_OUTPUT
           else
             echo "Files to be formatted: $FILES_CLEANED"
-            echo "has_files=true" >> $GITHUB_ENV
+            #echo "::set-output name=has_files::true"
+            echo has_files=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Debug output of FILES
-        if: env.has_files == 'true'
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          echo "Files to be formatted:"
-          echo "$FILES_CLEANED"
+          echo "Files to be formatted: ${{ env.FILES }}"
 
       - name: Run Prettier
-        if: env.has_files == 'true'
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write "${{ env.FILES }}"
+          prettier_options: --write ${{ env.FILES }}
           dry: false
 
       - name: Fail Notice
