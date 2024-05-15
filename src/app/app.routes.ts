@@ -54,4 +54,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./features/article/pages/article/article.component"),
   },
+
+
+  
 ];

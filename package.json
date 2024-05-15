@@ -9,6 +9,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "prepare": "husky install"
+  
   },
   "engines": {
     "node": "^18.13.0 || ^20.9.0"
