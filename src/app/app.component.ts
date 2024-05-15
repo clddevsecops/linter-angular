@@ -8,5 +8,8 @@ import { FooterComponent } from "./core/layout/footer.component";
   templateUrl: "./app.component.html",
   standalone: true,
   imports: [HeaderComponent, RouterOutlet, FooterComponent],
+
+
+
 })
 export class AppComponent {}
