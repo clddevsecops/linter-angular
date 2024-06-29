@@ -82,18 +82,13 @@ jobs:
           echo "Remotes:"
           git remote -v
 
-      # Fetch the latest state of the main branch
-      - name: Fetch latest main branch
-        run: |
-          git fetch origin main
-          git checkout main
-          git pull origin main
-
-      # Checkout the feature branch again
-      - name: Checkout feature branch again
+      # Ensure the branch is correctly set up for the pull request
+      - name: Fetch latest changes and push again
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          git checkout $BRANCH_NAME
+          git fetch origin
+          git pull origin $BRANCH_NAME
+          git push origin $BRANCH_NAME
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
