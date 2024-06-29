@@ -25,11 +25,10 @@ jobs:
       - name: Create feature branch
         id: create_branch
         run: |
-          BRANCH_NAME="feature/prettier-${{ github.sha }}"
+          export BRANCH_NAME="feature/prettier-${{ github.sha }}"
           git checkout -b $BRANCH_NAME
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           echo "Created and checked out to branch $BRANCH_NAME"
-          git status  # Debugging: Check the status after branch creation
           git branch -vv  # Debugging: Verify the branch tracking information
 
       # Collect changed files
@@ -77,8 +76,8 @@ jobs:
       - name: Push changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          echo "Pushing branch ${{ env.BRANCH_NAME }}"
-          git push --set-upstream origin ${{ env.BRANCH_NAME }}
+          echo "Pushing branch $BRANCH_NAME"
+          git push --set-upstream origin $BRANCH_NAME
           git branch -vv  # Debugging: Verify the branch tracking information after push
 
       # Create a pull request
@@ -88,7 +87,7 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
+          branch: $BRANCH_NAME
           title: "Apply Prettier formatting"
           body: "This PR applies Prettier formatting to the codebase."
           assignees: "clddevsecops"
