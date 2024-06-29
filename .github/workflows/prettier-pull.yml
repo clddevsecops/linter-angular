@@ -82,7 +82,26 @@ jobs:
           echo "Remotes:"
           git remote -v
 
-      # Skip additional pushes or commits to avoid overwriting Prettier changes
+      # Check for changes made by Prettier and commit if there are any
+      - name: Commit Prettier changes
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git status
+          git diff --name-only
+          if [ -n "$(git status --porcelain)" ]; then
+            git add ${{ env.FILES }}
+            git commit -m "Prettified Code"
+            git push origin $BRANCH_NAME
+          else
+            echo "No changes to commit"
+          fi
+
+      # Fetch the latest changes from main branch to ensure we are up-to-date
+      - name: Fetch latest main
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git fetch origin main
+          git rebase origin/main
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
