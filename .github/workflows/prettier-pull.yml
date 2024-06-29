@@ -71,22 +71,11 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
-      # # Commit Prettier changes if there are changed files
-      # - name: Commit changes
-      #   if: ${{ steps.files.outputs.has_files == 'true' }}
-      #   run: |
-      #     git add ${{ env.FILES }}
-      #     git commit -m "Prettier formatting applied"
-      #     git status  # Debugging: Check the status after commit
-      #     git log -1  # Debugging: Show the latest commit
-
-      # # Push changes to the feature branch with upstream set if there are changed files
-      # - name: Push changes
-      #   if: ${{ steps.files.outputs.has_files == 'true' }}
-      #   run: |
-      #     echo "Pushing branch $BRANCH_NAME"
-      #     git push --set-upstream origin $BRANCH_NAME
-      #     git branch -vv  # Debugging: Verify the branch tracking information after push
+      # Debugging: Verify environment variables
+      - name: Debug environment variables
+        run: |
+          echo "Branch Name: $BRANCH_NAME"
+          echo "Files: ${{ env.FILES }}"
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
