@@ -47,26 +47,12 @@ jobs:
           echo "Created and checked out to branch $BRANCH_NAME"
           git branch -vv  # Debugging: Verify the branch tracking information
 
-      # Configure Git user for initial commit if there are changed files
+      # Configure Git user for commits
       - name: Configure Git user
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Initial commit to create the branch if there are changed files
-      - name: Initial commit
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git commit --allow-empty -m "Initial commit for Prettier formatting"
-          git push --set-upstream origin $BRANCH_NAME
-
-      # Checkout the newly created feature branch
-      - name: Checkout feature branch
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.BRANCH_NAME }}
 
       # Run Prettier to format code if there are changed files
       - name: Run Prettier
@@ -75,9 +61,20 @@ jobs:
         with:
           prettier_options: --write ${{ env.FILES }}
           dry: false
+        env:
+          FILES: ${{ env.FILES }}
+
+      # Commit Prettier changes
+      - name: Commit changes
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git add ${{ env.FILES }}
+          git commit -m "Prettier formatting applied"
+          git push --set-upstream origin $BRANCH_NAME
 
       # Debugging: Verify environment variables
       - name: Debug environment variables
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           echo "Branch Name: $BRANCH_NAME"
           echo "Files: ${{ env.FILES }}"
