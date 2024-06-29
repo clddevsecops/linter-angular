@@ -28,6 +28,7 @@ jobs:
           BRANCH_NAME="feature/prettier-${{ github.sha }}"
           git checkout -b $BRANCH_NAME
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "Created and checked out to branch $BRANCH_NAME"
           git status  # Debugging: Check the status after branch creation
           git branch -vv  # Debugging: Verify the branch tracking information
 
@@ -38,6 +39,7 @@ jobs:
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
           FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
           echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
+          echo "Changed files: $FILES_CLEANED"  # Debugging: Output the changed files
           if [ -z "$FILES_CLEANED" ]; then
             echo "No files to format."
             echo "has_files=false" >> $GITHUB_OUTPUT
@@ -68,11 +70,14 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add ${{ env.FILES }}
           git commit -m "Prettier formatting applied"
+          git status  # Debugging: Check the status after commit
+          git log -1  # Debugging: Show the latest commit
 
       # Push changes to the feature branch with upstream set
       - name: Push changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
+          echo "Pushing branch ${{ env.BRANCH_NAME }}"
           git push --set-upstream origin ${{ env.BRANCH_NAME }}
           git branch -vv  # Debugging: Verify the branch tracking information after push
 
