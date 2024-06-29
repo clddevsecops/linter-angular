@@ -28,6 +28,8 @@ jobs:
           BRANCH_NAME="feature/prettier-${{ github.sha }}"
           git checkout -b $BRANCH_NAME
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          git status  # Debugging: Check the status after branch creation
+          git branch -vv  # Debugging: Verify the branch tracking information
 
       # Collect changed files
       - name: Get changed files
@@ -67,11 +69,12 @@ jobs:
           git add ${{ env.FILES }}
           git commit -m "Prettier formatting applied"
 
-         # Push changes to the feature branch with upstream set
+      # Push changes to the feature branch with upstream set
       - name: Push changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git push --set-upstream origin ${{ env.BRANCH_NAME }}
+          git branch -vv  # Debugging: Verify the branch tracking information after push
 
       # Create a pull request
       - name: Create Pull Request
@@ -84,6 +87,7 @@ jobs:
           title: "Apply Prettier formatting"
           body: "This PR applies Prettier formatting to the codebase."
           assignees: "clddevsecops"
+
       # Notify failure
       - name: Fail Notice
         if: failure()
