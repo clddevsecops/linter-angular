@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: write  # This line gives the workflow write permissions
-  pull-requests: write  # This line gives the workflow pull request permissions
 
 jobs:
   prettier:
@@ -29,7 +28,7 @@ jobs:
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
           FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
           echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
-          echo "Changed files: $FILES_CLEANED"  # Debugging: Output the changed files
+          echo "Changed files: $FILES_CLEANED"
           if [ -z "$FILES_CLEANED" ]; then
             echo "No files to format."
             echo "has_files=false" >> $GITHUB_OUTPUT
@@ -44,7 +43,7 @@ jobs:
         run: |
           git checkout -b $BRANCH_NAME
           echo "Created and checked out to branch $BRANCH_NAME"
-          git branch -vv  # Debugging: Verify the branch tracking information
+          git branch -vv
 
       # Configure Git user for commits
       - name: Configure Git user
@@ -82,39 +81,13 @@ jobs:
           echo "Remotes:"
           git remote -v
 
-      # Check for changes made by Prettier and commit if there are any
-      - name: Commit Prettier changes
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git status
-          git diff --name-only
-          if [ -n "$(git status --porcelain)" ]; then
-            git add ${{ env.FILES }}
-            git commit -m "Prettified Code"
-            git push $BRANCH_NAME
-          else
-            echo "No changes to commit"
-          fi
-
-      # Fetch the latest changes from main branch to ensure we are up-to-date
-      - name: Fetch latest main
+      # Compare feature branch with main branch
+      - name: Compare feature branch with main branch
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git fetch origin main
-          git rebase origin main
-
-      # Create a pull request if there are changed files
-      - name: Create Pull Request
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        id: create_pr
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
-          base: main  # Ensure the base branch is main
-          title: "Apply Prettier formatting"
-          body: "This PR applies Prettier formatting to the codebase."
-          assignees: "clddevsecops"
+          git diff origin/main...$BRANCH_NAME --name-only
+          git diff origin/main...$BRANCH_NAME
 
       # Notify failure if there are changed files
       - name: Fail Notice
