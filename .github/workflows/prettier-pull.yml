@@ -78,7 +78,7 @@ jobs:
       - name: Fetch latest changes and push again
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          git pull origin $BRANCH_NAME
+          git fetch origin $BRANCH_NAME
           git push origin $BRANCH_NAME
 
       - name: Compare feature branch with main branch
