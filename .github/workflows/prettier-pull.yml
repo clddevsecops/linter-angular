@@ -21,22 +21,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
 
-      # Create and checkout to a new feature branch
-      - name: Create feature branch
-        id: create_branch
-        run: |
-          export BRANCH_NAME="feature/prettier-${{ github.sha }}"
-          git checkout -b $BRANCH_NAME
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "Created and checked out to branch $BRANCH_NAME"
-          git branch -vv  # Debugging: Verify the branch tracking information
-
-      # Initial commit to create the branch
-      - name: Initial commit
-        run: |
-          git commit --allow-empty -m "Initial commit for Prettier formatting"
-          git push --set-upstream origin $BRANCH_NAME
-
       # Collect changed files
       - name: Get changed files
         id: files
@@ -53,13 +37,31 @@ jobs:
             echo "has_files=true" >> $GITHUB_OUTPUT
           fi
 
-      # Debug output of changed files
-      - name: Debug output of FILES
+      # Create and checkout to a new feature branch if there are changed files
+      - name: Create feature branch
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          echo "Files to be formatted: ${{ env.FILES }}"
+          export BRANCH_NAME="feature/prettier-${{ github.sha }}"
+          git checkout -b $BRANCH_NAME
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "Created and checked out to branch $BRANCH_NAME"
+          git branch -vv  # Debugging: Verify the branch tracking information
 
-      # Run Prettier to format code
+      # Configure Git user for initial commit if there are changed files
+      - name: Configure Git user
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Initial commit to create the branch if there are changed files
+      - name: Initial commit
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git commit --allow-empty -m "Initial commit for Prettier formatting"
+          git push --set-upstream origin $BRANCH_NAME
+
+      # Run Prettier to format code if there are changed files
       - name: Run Prettier
         if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: creyD/prettier_action@v4.3
@@ -69,18 +71,16 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
-      # Commit Prettier changes
+      # Commit Prettier changes if there are changed files
       - name: Commit changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add ${{ env.FILES }}
           git commit -m "Prettier formatting applied"
           git status  # Debugging: Check the status after commit
           git log -1  # Debugging: Show the latest commit
 
-      # Push changes to the feature branch with upstream set
+      # Push changes to the feature branch with upstream set if there are changed files
       - name: Push changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
@@ -88,7 +88,7 @@ jobs:
           git push --set-upstream origin $BRANCH_NAME
           git branch -vv  # Debugging: Verify the branch tracking information after push
 
-      # Create a pull request
+      # Create a pull request if there are changed files
       - name: Create Pull Request
         if: ${{ steps.files.outputs.has_files == 'true' }}
         id: create_pr
@@ -100,7 +100,7 @@ jobs:
           body: "This PR applies Prettier formatting to the codebase."
           assignees: "clddevsecops"
 
-      # Notify failure
+      # Notify failure if there are changed files
       - name: Fail Notice
         if: failure()
         run: echo "Prettier formatting failed, check the logs for details."
