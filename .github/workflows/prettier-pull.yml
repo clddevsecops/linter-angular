@@ -1,0 +1,90 @@
+name: Continuous Integration revised
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write  # This line gives the workflow write permissions
+  pull-requests: write  # This line gives the workflow pull request permissions
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      # Create and checkout to a new feature branch
+      - name: Create feature branch
+        id: create_branch
+        run: |
+          BRANCH_NAME="feature/prettier-${{ github.sha }}"
+          git checkout -b $BRANCH_NAME
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+      # Collect changed files
+      - name: Get changed files
+        id: files
+        run: |
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
+          FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
+          echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
+          if [ -z "$FILES_CLEANED" ]; then
+            echo "No files to format."
+            echo "has_files=false" >> $GITHUB_OUTPUT
+          else
+            echo "Files to be formatted: $FILES_CLEANED"
+            echo "has_files=true" >> $GITHUB_OUTPUT
+          fi
+
+      # Debug output of changed files
+      - name: Debug output of FILES
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          echo "Files to be formatted: ${{ env.FILES }}"
+
+      # Run Prettier to format code
+      - name: Run Prettier
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        uses: creyD/prettier_action@v4.3
+        with:
+          prettier_options: --write ${{ env.FILES }}
+          dry: false
+
+      # Commit changes
+      - name: Commit changes
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ${{ env.FILES }}
+          git commit -m "Prettier formatting applied"
+
+      # Push changes to the feature branch
+      - name: Push changes
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git push origin ${{ env.BRANCH_NAME }}
+
+      # Create a pull request
+      - name: Create Pull Request
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        id: create_pr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          title: "Apply Prettier formatting"
+          body: "This PR applies Prettier formatting to the codebase."
+          assignees: "clddevsecops"
+      # Notify failure
+      - name: Fail Notice
+        if: failure()
+        run: echo "Prettier formatting failed, check the logs for details."
