@@ -70,20 +70,16 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
-      # Checkout the feature branch again to ensure we are on the correct branch after Prettier runs
-      - name: Checkout feature branch again
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git checkout $BRANCH_NAME
-          git pull origin $BRANCH_NAME
-
       # Verify the branch and commit history after Prettier
       - name: Verify branch and commit history
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           echo "Current branch: $(git branch --show-current)"
-          git log --oneline --graph --all
+          echo "Last 5 commits:"
+          git log --oneline -5
+          echo "Branches:"
           git branch -vv
+          echo "Remotes:"
           git remote -v
 
       # Create a pull request if there are changed files
