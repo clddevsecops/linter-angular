@@ -7,8 +7,8 @@ on:
       - main
 
 permissions:
-  contents: write  # This line gives the workflow write permissions
-  pull-requests: write  # This line gives the workflow pull request permissions
+  contents: write
+  pull-requests: write
 
 jobs:
   prettier:
@@ -25,7 +25,7 @@ jobs:
         id: files
         run: |
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
-          FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
+          FILES_CLEANED=$(echo $FILES | xargs)
           echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
           echo "Changed files: $FILES_CLEANED"
           if [ -z "$FILES_CLEANED" ]; then
@@ -79,6 +79,7 @@ jobs:
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git fetch origin main
+          echo "Comparing feature branch with main branch:"
           git diff origin/main...$BRANCH_NAME --name-only
           git diff origin/main...$BRANCH_NAME
 
@@ -89,7 +90,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
-          base: main  # Ensure the base branch is main
+          base: main
           title: "Apply Prettier formatting"
           body: "This PR applies Prettier formatting to the codebase."
           assignees: "clddevsecops"
