@@ -21,7 +21,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref }}
 
       # Collect changed files
       - name: Get changed files
@@ -54,6 +53,13 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # Initial commit to create the branch if there are changed files
+      - name: Initial commit
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git commit --allow-empty -m "Initial commit for Prettier formatting"
+          git push --set-upstream origin $BRANCH_NAME
+
       # Run Prettier to format code if there are changed files
       - name: Run Prettier
         if: ${{ steps.files.outputs.has_files == 'true' }}
@@ -63,21 +69,6 @@ jobs:
           dry: false
         env:
           FILES: ${{ env.FILES }}
-
-      # Commit Prettier changes
-      - name: Commit changes
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git add ${{ env.FILES }}
-          git commit -m "Prettier formatting applied"
-          git push --set-upstream origin $BRANCH_NAME
-
-      # Debugging: Verify environment variables
-      - name: Debug environment variables
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          echo "Branch Name: $BRANCH_NAME"
-          echo "Files: ${{ env.FILES }}"
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
