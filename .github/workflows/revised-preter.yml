@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
 
-      - name: Get changed files
+      - name: Get changed file
         id: files
         run: |
           # Collect the changed files in the 'src/' directory that match specific extensions
