@@ -25,7 +25,7 @@ jobs:
       - name: Create feature branch
         id: create_branch
         run: |
-          BRANCH_NAME="feature/prettier-${{ github.sha }}"
+          export BRANCH_NAME="feature/prettier-${{ github.sha }}"
           git checkout -b $BRANCH_NAME
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           echo "Created and checked out to branch $BRANCH_NAME"
@@ -58,8 +58,10 @@ jobs:
         if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write "${{ env.FILES }}"
+          prettier_options: --write ${{ env.FILES }}
           dry: false
+        env:
+          FILES: ${{ env.FILES }}
 
       # Commit changes
       - name: Commit changes
@@ -87,7 +89,7 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
+          branch: $BRANCH_NAME
           title: "Apply Prettier formatting"
           body: "This PR applies Prettier formatting to the codebase."
           assignees: "clddevsecops"
