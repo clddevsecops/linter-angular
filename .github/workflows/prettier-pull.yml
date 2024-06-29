@@ -91,11 +91,13 @@ jobs:
 
       # Checkout the feature branch again
       - name: Checkout feature branch again
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git checkout $BRANCH_NAME
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         id: create_pr
         uses: peter-evans/create-pull-request@v4
         with:
