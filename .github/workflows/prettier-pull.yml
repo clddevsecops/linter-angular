@@ -82,12 +82,12 @@ jobs:
           echo "Remotes:"
           git remote -v
 
-      # Ensure the branch is correctly set up for the pull request
-      - name: Fetch latest changes and push again
+      # Push the changes made by Prettier
+      - name: Push Prettier changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          git fetch origin
-          git pull origin $BRANCH_NAME
+          git add ${{ env.FILES }}
+          git commit -m "Prettified Code"
           git push origin $BRANCH_NAME
 
       # Create a pull request if there are changed files
