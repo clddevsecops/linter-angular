@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write  # This line gives the workflow write permissions
+  pull-requests: write  # This line gives the workflow pull request permissions
 
 jobs:
   prettier:
@@ -15,13 +16,11 @@ jobs:
     env:
       BRANCH_NAME: "feature/prettier-${{ github.sha }}"
     steps:
-      # Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Collect changed files
       - name: Get changed files
         id: files
         run: |
@@ -37,7 +36,6 @@ jobs:
             echo "has_files=true" >> $GITHUB_OUTPUT
           fi
 
-      # Create and checkout to a new feature branch if there are changed files
       - name: Create feature branch
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
@@ -45,21 +43,18 @@ jobs:
           echo "Created and checked out to branch $BRANCH_NAME"
           git branch -vv
 
-      # Configure Git user for commits
       - name: Configure Git user
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Initial commit to create the branch if there are changed files
       - name: Initial commit
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git commit --allow-empty -m "Initial commit for Prettier formatting"
           git push --set-upstream origin $BRANCH_NAME
 
-      # Run Prettier to format code if there are changed files
       - name: Run Prettier
         if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: creyD/prettier_action@v4.3
@@ -69,8 +64,7 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
-      # Verify the branch and commit history after Prettier
-      - name: Verify branch and commit history
+      - name: Verify branch and commit history after Prettier
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           echo "Current branch: $(git branch --show-current)"
@@ -81,7 +75,6 @@ jobs:
           echo "Remotes:"
           git remote -v
 
-      # Compare feature branch with main branch
       - name: Compare feature branch with main branch
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
@@ -89,7 +82,18 @@ jobs:
           git diff origin/main...$BRANCH_NAME --name-only
           git diff origin/main...$BRANCH_NAME
 
-      # Notify failure if there are changed files
+      - name: Create Pull Request
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        id: create_pr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          base: main  # Ensure the base branch is main
+          title: "Apply Prettier formatting"
+          body: "This PR applies Prettier formatting to the codebase."
+          assignees: "clddevsecops"
+
       - name: Fail Notice
         if: failure()
         run: echo "Prettier formatting failed, check the logs for details."
