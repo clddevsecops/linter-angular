@@ -83,6 +83,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
+          base: main  # Ensure the base branch is main
           title: "Apply Prettier formatting"
           body: "This PR applies Prettier formatting to the codebase."
           assignees: "clddevsecops"
