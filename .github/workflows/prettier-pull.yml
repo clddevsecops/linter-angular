@@ -1,4 +1,4 @@
-name: Continuous Integration revised
+name: Prettier PR
 
 on:
   pull_request:
@@ -67,11 +67,11 @@ jobs:
           git add ${{ env.FILES }}
           git commit -m "Prettier formatting applied"
 
-      # Push changes to the feature branch
+         # Push changes to the feature branch with upstream set
       - name: Push changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          git push origin ${{ env.BRANCH_NAME }}
+          git push --set-upstream origin ${{ env.BRANCH_NAME }}
 
       # Create a pull request
       - name: Create Pull Request
