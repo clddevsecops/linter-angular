@@ -82,18 +82,7 @@ jobs:
           echo "Remotes:"
           git remote -v
 
-      # Check for changes made by Prettier and commit if there are any
-      - name: Commit Prettier changes
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git status
-          if [ -n "$(git status --porcelain)" ]; then
-            git add ${{ env.FILES }}
-            git commit -m "Prettified Code"
-            git push origin $BRANCH_NAME
-          else
-            echo "No changes to commit"
-          fi
+      # Skip additional pushes or commits to avoid overwriting Prettier changes
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
