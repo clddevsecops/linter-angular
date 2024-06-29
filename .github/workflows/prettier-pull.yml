@@ -70,33 +70,33 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
-      # Checkout the feature branch to ensure we are on the correct branch after Prettier runs
-      - name: Checkout feature branch
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git checkout $BRANCH_NAME
-          git pull origin $BRANCH_NAME
+      # # Checkout the feature branch to ensure we are on the correct branch after Prettier runs
+      # - name: Checkout feature branch
+      #   if: ${{ steps.files.outputs.has_files == 'true' }}
+      #   run: |
+      #     git checkout $BRANCH_NAME
+      #     git pull origin $BRANCH_NAME
 
-      # Verify the branch and commit history after Prettier
-      - name: Verify branch and commit history
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git log --oneline --graph --all
-          git branch -vv
-          git remote -v
+      # # Verify the branch and commit history after Prettier
+      # - name: Verify branch and commit history
+      #   if: ${{ steps.files.outputs.has_files == 'true' }}
+      #   run: |
+      #     git log --oneline --graph --all
+      #     git branch -vv
+      #     git remote -v
 
-      # Create a pull request if there are changed files
-      - name: Create Pull Request
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        id: create_pr
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
-          base: main  # Ensure the base branch is main
-          title: "Apply Prettier formatting"
-          body: "This PR applies Prettier formatting to the codebase."
-          assignees: "clddevsecops"
+      # # Create a pull request if there are changed files
+      # - name: Create Pull Request
+      #   if: ${{ steps.files.outputs.has_files == 'true' }}
+      #   id: create_pr
+      #   uses: peter-evans/create-pull-request@v4
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ env.BRANCH_NAME }}
+      #     base: main  # Ensure the base branch is main
+      #     title: "Apply Prettier formatting"
+      #     body: "This PR applies Prettier formatting to the codebase."
+      #     assignees: "clddevsecops"
 
       # Notify failure if there are changed files
       - name: Fail Notice
