@@ -100,8 +100,8 @@ jobs:
       - name: Fetch latest main
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          git fetch main
-          git rebase main
+          git fetch origin main
+          git rebase origin main
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
