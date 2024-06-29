@@ -91,7 +91,7 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git add ${{ env.FILES }}
             git commit -m "Prettified Code"
-            git push origin $BRANCH_NAME
+            git push $BRANCH_NAME
           else
             echo "No changes to commit"
           fi
@@ -100,8 +100,8 @@ jobs:
       - name: Fetch latest main
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
-          git fetch origin main
-          git rebase origin/main
+          git fetch main
+          git rebase main
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
