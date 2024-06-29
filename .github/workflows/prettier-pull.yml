@@ -70,6 +70,14 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
+      # Debugging: Verify the branch and commit history after Prettier
+      - name: Verify branch and commit history
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git log --oneline
+          git branch -vv
+          git remote -v
+
       # Create a pull request if there are changed files
       - name: Create Pull Request
         if: ${{ steps.files.outputs.has_files == 'true' }}
