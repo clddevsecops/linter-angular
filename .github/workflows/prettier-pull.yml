@@ -82,9 +82,20 @@ jobs:
           echo "Remotes:"
           git remote -v
 
+      # Fetch the latest state of the main branch
+      - name: Fetch latest main branch
+        run: |
+          git fetch origin main
+          git checkout main
+          git pull origin main
+
+      # Checkout the feature branch again
+      - name: Checkout feature branch again
+        run: |
+          git checkout $BRANCH_NAME
+
       # Create a pull request if there are changed files
       - name: Create Pull Request
-        if: ${{ steps.files.outputs.has_files == 'true' }}
         id: create_pr
         uses: peter-evans/create-pull-request@v4
         with:
