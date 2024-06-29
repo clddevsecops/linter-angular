@@ -60,14 +60,6 @@ jobs:
           git commit --allow-empty -m "Initial commit for Prettier formatting"
           git push --set-upstream origin $BRANCH_NAME
 
-      # Checkout the feature branch again to ensure we are on the correct branch
-      - name: Checkout feature branch
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.BRANCH_NAME }}
-          fetch-depth: 0
-
       # Run Prettier to format code if there are changed files
       - name: Run Prettier
         if: ${{ steps.files.outputs.has_files == 'true' }}
@@ -78,7 +70,14 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
-      # Debugging: Verify the branch and commit history after Prettier
+      # Checkout the feature branch to ensure we are on the correct branch after Prettier runs
+      - name: Checkout feature branch
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git checkout $BRANCH_NAME
+          git pull origin $BRANCH_NAME
+
+      # Verify the branch and commit history after Prettier
       - name: Verify branch and commit history
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
