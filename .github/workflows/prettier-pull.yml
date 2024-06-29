@@ -89,6 +89,17 @@ jobs:
           git diff origin/main...$BRANCH_NAME --name-only
           git diff origin/main...$BRANCH_NAME
 
+      - name: Verify branch and commit history after fetching main
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          echo "Current branch after fetching main: $(git branch --show-current)"
+          echo "Last 5 commits after fetching main:"
+          git log --oneline -5
+          echo "Branches after fetching main:"
+          git branch -vv
+          echo "Remotes after fetching main:"
+          git remote -v
+
       - name: Create Pull Request
         if: ${{ steps.files.outputs.has_files == 'true' }}
         id: create_pr
