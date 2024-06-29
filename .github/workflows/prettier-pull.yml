@@ -58,7 +58,7 @@ jobs:
         if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write ${{ env.FILES }}
+          prettier_options: --write "${{ env.FILES }}"
           dry: false
 
       # Commit changes
