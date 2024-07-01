@@ -1,16 +1,16 @@
-name: Demo to create automatic PR
+name: Prettier PR
 
 on:
   push:
     branches:
       - main
-      
+
 permissions:
   contents: write  # This line gives the workflow write permissions
   pull-requests: write  # This line gives the workflow pull request permissions
-  
+
 jobs:
-  updateAuthor:
+  prettier:
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: "feature/prettier-${{ github.sha }}"
@@ -21,18 +21,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: extract git commit data
-        uses: rlespinasse/git-commit-data-action@v1.x
-
-      - name: Update author information
-        run: echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
-
-      - name: Get changed file
+      # Collect changed files
+      - name: Get changed files
         id: files
         run: |
-          # Collect the changed files in the 'src/' directory that match specific extensions
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
-          # Prepare FILES for output, removing extra characters and ensuring it's a space-separated string
           FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
           echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
           if [ -z "$FILES_CLEANED" ]; then
@@ -43,37 +36,46 @@ jobs:
             echo "has_files=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: extract git commit data
+        uses: rlespinasse/git-commit-data-action@v1.x
+
+      - name: Update author information
+        run: echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
+
+      # Create and checkout to a new feature branch if there are changed files
       - name: Create feature branch
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git checkout -b $BRANCH_NAME
+          git push --set-upstream origin $BRANCH_NAME
           echo "Created and checked out to branch $BRANCH_NAME"
           git branch -vv  # Debugging: Verify the branch tracking information
 
-      - name: Debug output of FILES
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          echo "Files to be formatted: ${{ env.FILES }}"
-
+      # Run Prettier to format code if there are changed files
       - name: Run Prettier
         if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: creyD/prettier_action@v4.3
         with:
           prettier_options: --write ${{ env.FILES }}
           dry: false
-          push_options: true
 
-      - name: Raise PR 1
-        id: demo-1
+
+      # Create a pull request if there are changed files
+      - name: Create Pull Request
         if: ${{ steps.files.outputs.has_files == 'true' }}
+        id: create_pr
         uses: peter-evans/create-pull-request@v3
         with:
-          branch: ${{ env.BRANCH_NAME }}
-          base: main
-          title: "demo for auto pr1"
-          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
-          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
-          body:
-            This is to show automatic PR creation
           token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          base: main  # Ensure the base branch is main
+          title: "Apply Prettier formatting"
+          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
+          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
+          body: "This PR applies Prettier formatting to the codebase."
           delete-branch: true
+
+      # Notify failure if there are changed files
+      - name: Fail Notice
+        if: failure()
+        run: echo "Prettier formatting failed, check the logs for details."
