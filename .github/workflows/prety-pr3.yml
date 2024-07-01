@@ -64,6 +64,7 @@ jobs:
 
       - name: Raise PR 1
         id: demo-1
+        if: ${{ steps.files.outputs.has_files == 'true' }}
         uses: peter-evans/create-pull-request@v3
         with:
           branch: ${{ env.BRANCH_NAME }}
