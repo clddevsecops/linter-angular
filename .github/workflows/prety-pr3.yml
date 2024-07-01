@@ -1,6 +1,7 @@
 name: Prettier PR
 
 on:
+  pull_request:
   push:
     branches:
       - main
@@ -14,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: "feature/prettier-${{ github.sha }}"
+    outputs:
+      branch_name: ${{ steps.set_branch.outputs.branch_name }}
     steps:
       # Checkout the code from the repository
       - name: Checkout code
@@ -28,6 +31,7 @@ jobs:
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
           FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
           echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
+          echo "Changed files: $FILES_CLEANED"  # Debugging: Output the changed files
           if [ -z "$FILES_CLEANED" ]; then
             echo "No files to format."
             echo "has_files=false" >> $GITHUB_OUTPUT
@@ -36,7 +40,7 @@ jobs:
             echo "has_files=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Extract git commit data
+      - name: extract git commit data
         uses: rlespinasse/git-commit-data-action@v1.x
 
       - name: Update author information
@@ -44,12 +48,27 @@ jobs:
 
       # Create and checkout to a new feature branch if there are changed files
       - name: Create feature branch
+        id: set_branch
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           git checkout -b $BRANCH_NAME
-          git push --set-upstream origin $BRANCH_NAME
           echo "Created and checked out to branch $BRANCH_NAME"
           git branch -vv  # Debugging: Verify the branch tracking information
+          echo "::set-output name=branch_name::$BRANCH_NAME"
+
+      # Configure Git user for commits
+      - name: Configure Git user
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Initial commit to create the branch if there are changed files
+      - name: Initial commit
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git commit --allow-empty -m "Initial commit for Prettier formatting"
+          git push --set-upstream origin $BRANCH_NAME
 
       # Run Prettier to format code if there are changed files
       - name: Run Prettier
@@ -58,21 +77,55 @@ jobs:
         with:
           prettier_options: --write ${{ env.FILES }}
           dry: false
+        env:
+          FILES: ${{ env.FILES }}
+
+      # Verify branch and commit history after Prettier
+      - name: Verify branch and commit history
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          echo "Current branch: $(git branch --show-current)"
+          git log --oneline --graph --all
+          git branch -vv
+          git remote -v
+
+      # Fetch latest changes and push again if necessary
+      - name: Fetch latest changes and push again
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git fetch origin $BRANCH_NAME
+          git push origin $BRANCH_NAME
+
+      # Compare feature branch with main branch
+      - name: Compare feature branch with main branch
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git fetch origin main
+          git diff origin/main
+
+  create_pull_request:
+    needs: prettier
+    runs-on: ubuntu-latest
+    if: ${{ needs.prettier.outputs.branch_name != '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prettier.outputs.branch_name }}
+          fetch-depth: 0
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
-        if: ${{ steps.files.outputs.has_files == 'true' }}
         id: create_pr
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: $BRANCH_NAME
+          branch: ${{ needs.prettier.outputs.branch_name }}
           base: main  # Ensure the base branch is main
           title: "Apply Prettier formatting"
-          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
-          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
+          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
+          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
           body: "This PR applies Prettier formatting to the codebase."
-          delete-branch: true
 
       # Notify failure if there are changed files
       - name: Fail Notice
