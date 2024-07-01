@@ -34,6 +34,34 @@ jobs:
           echo "Created and checked out to branch $BRANCH_NAME"
           git branch -vv  # Debugging: Verify the branch tracking information
 
+      - name: Get changed file
+        id: files
+        run: |
+          # Collect the changed files in the 'src/' directory that match specific extensions
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- 'src/' | grep -E '\.(js|ts|css|scss|html)$' || echo "")
+          # Prepare FILES for output, removing extra characters and ensuring it's a space-separated string
+          FILES_CLEANED=$(echo $FILES | xargs)  # Trims and converts newlines to spaces
+          echo "FILES=$FILES_CLEANED" >> $GITHUB_ENV
+          if [ -z "$FILES_CLEANED" ]; then
+            echo "No files to format."
+            echo "has_files=false" >> $GITHUB_OUTPUT
+          else
+            echo "Files to be formatted: $FILES_CLEANED"
+            echo "has_files=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Debug output of FILES
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          echo "Files to be formatted: ${{ env.FILES }}"
+
+      - name: Run Prettier
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        uses: creyD/prettier_action@v4.3
+        with:
+          prettier_options: --write ${{ env.FILES }}
+          dry: false
+
       - name: Raise PR 1
         id: demo-1
         uses: peter-evans/create-pull-request@v3
