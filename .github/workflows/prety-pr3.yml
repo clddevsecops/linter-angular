@@ -97,38 +97,64 @@ jobs:
           git fetch origin main
           git diff origin/main
 
-  create_pull_request:
-    needs: prettier
-    runs-on: ubuntu-latest
-    if: ${{ needs.prettier.outputs.branch_name != '' }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.prettier.outputs.branch_name }}
-          fetch-depth: 0
+  # create_pull_request:
+  #   needs: prettier
+  #   runs-on: ubuntu-latest
+  #   if: ${{ needs.prettier.outputs.branch_name != '' }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ needs.prettier.outputs.branch_name }}
+  #         fetch-depth: 0
 
-      - name: Extract git commit data
+  #     - name: Extract git commit data
+  #       uses: rlespinasse/git-commit-data-action@v1.x
+
+  #     - name: Update author information
+  #       run: |
+  #         echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
+
+  #     # Create a pull request if there are changed files
+  #     - name: Create Pull Request
+  #       id: create_pr
+  #       uses: peter-evans/create-pull-request@v3
+  #       with:
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         branch: "test-branch"
+  #         base: main  # Ensure the base branch is main
+  #         title: "Apply Prettier formatting"
+  #         committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
+  #         author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
+  #         body: "This PR applies Prettier formatting to the codebase."
+
+  #     # Notify failure if there are changed files
+  #     - name: Fail Notice
+  #       if: failure()
+  #       run: echo "Prettier formatting failed, check the logs for details."
+
+  updateAuthor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checking out code
+        uses: actions/checkout@v2
+
+      - name: extract git commit data
         uses: rlespinasse/git-commit-data-action@v1.x
 
       - name: Update author information
-        run: |
-          echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
+        run: echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
 
-      # Create a pull request if there are changed files
-      - name: Create Pull Request
-        id: create_pr
+      - name: Raise PR 1
+        id: demo-1
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "test-branch"
-          base: main  # Ensure the base branch is main
-          title: "Apply Prettier formatting"
+          branch: $BRANCH_NAME
+          base: main
+          title: "demo for auto pr1"
           committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
           author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
-          body: "This PR applies Prettier formatting to the codebase."
-
-      # Notify failure if there are changed files
-      - name: Fail Notice
-        if: failure()
-        run: echo "Prettier formatting failed, check the logs for details."
+          body:
+            This is to show automatic PR creation
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-branch: true
