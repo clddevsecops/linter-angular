@@ -95,17 +95,26 @@ jobs:
           echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
 
       # Create a pull request if there are changed files
-      - name: Create Pull Request
-        id: create_pr
-        uses: peter-evans/create-pull-request@v3
+
+      - name: Run the Action
+        uses: devops-infra/action-pull-request@v0.5.5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ needs.prettier.outputs.branch_name }}
-          base: main  # Ensure the base branch is main
-          title: "Apply Prettier formatting"
-          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
-          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
-          body: "This PR applies Prettier formatting to the codebase."
+           github_token: ${{ secrets.GITHUB_TOKEN }}
+           source_branch: ${{ steps.set_branch.outputs.branch_name }}
+           target_branch: main
+           title: My pull request
+           template: .github/PULL_REQUEST_TEMPLATE.md
+           body: "**Automated pull request**"
+           reviewer: clddevsecops
+           assignee: clddevsecops
+           label: enhancement
+           milestone: My milestone
+           draft: true
+           old_string: "<!-- Add your description here -->"
+           new_string: "** Automatic pull request**"
+           get_diff: true
+           ignore_users: "dependabot"
+           allow_no_diff: false
 
       # Notify failure if there are changed files
       - name: Fail Notice
