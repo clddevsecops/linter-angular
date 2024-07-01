@@ -27,13 +27,6 @@ jobs:
       - name: Update author information
         run: echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
 
-      - name: Create feature branch
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git checkout -b $BRANCH_NAME
-          echo "Created and checked out to branch $BRANCH_NAME"
-          git branch -vv  # Debugging: Verify the branch tracking information
-
       - name: Get changed file
         id: files
         run: |
@@ -49,6 +42,13 @@ jobs:
             echo "Files to be formatted: $FILES_CLEANED"
             echo "has_files=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: Create feature branch
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git checkout -b $BRANCH_NAME
+          echo "Created and checked out to branch $BRANCH_NAME"
+          git branch -vv  # Debugging: Verify the branch tracking information
 
       - name: Debug output of FILES
         if: ${{ steps.files.outputs.has_files == 'true' }}
