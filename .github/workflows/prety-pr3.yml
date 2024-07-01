@@ -58,7 +58,13 @@ jobs:
         with:
           prettier_options: --write ${{ env.FILES }}
           dry: false
-          
+      - name: Create dummy file with timestamp
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+          echo "This is a dummy file created on $TIMESTAMP" > dummy_file_$TIMESTAMP.txt
+          git add dummy_file_$TIMESTAMP.txt
+  
       - name: Push Prettier changes
         if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
