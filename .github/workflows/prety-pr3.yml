@@ -58,7 +58,13 @@ jobs:
         with:
           prettier_options: --write ${{ env.FILES }}
           dry: false
-
+          
+      - name: Push Prettier changes
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git add ${{ env.FILES }}
+          git commit -m "Prettified Code!"
+          git push origin $BRANCH_NAME
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
