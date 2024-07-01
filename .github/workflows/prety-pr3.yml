@@ -40,13 +40,6 @@ jobs:
             echo "has_files=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Extract git commit data
-        uses: rlespinasse/git-commit-data-action@v1.x
-
-      - name: Update author information
-        run: |
-          echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
-
       # Create and checkout to a new feature branch if there are changed files
       - name: Create feature branch
         id: set_branch
@@ -115,9 +108,12 @@ jobs:
           ref: ${{ needs.prettier.outputs.branch_name }}
           fetch-depth: 0
 
-      - name: Get Git commit data
-        id: commit_data
+      - name: Extract git commit data
         uses: rlespinasse/git-commit-data-action@v1.x
+
+      - name: Update author information
+        run: |
+          echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
 
       # Create a pull request if there are changed files
       - name: Create Pull Request
@@ -128,8 +124,8 @@ jobs:
           branch: ${{ needs.prettier.outputs.branch_name }}
           base: main  # Ensure the base branch is main
           title: "Apply Prettier formatting"
-          committer: ${{ steps.commit_data.outputs.commit_author_name }} <${{ steps.commit_data.outputs.commit_author_email }}>
-          author: ${{ steps.commit_data.outputs.commit_author_name }} <${{ steps.commit_data.outputs.commit_author_email }}>
+          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
+          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
           body: "This PR applies Prettier formatting to the codebase."
 
       # Notify failure if there are changed files
