@@ -61,6 +61,7 @@ jobs:
         with:
           prettier_options: --write ${{ env.FILES }}
           dry: false
+          push_options: false
 
       - name: Raise PR 1
         id: demo-1
