@@ -76,6 +76,29 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
+      # Verify branch and commit history after Prettier
+      - name: Verify branch and commit history
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          echo "Current branch: $(git branch --show-current)"
+          git log --oneline --graph --all
+          git branch -vv
+          git remote -v
+
+      # Fetch latest changes and push again if necessary
+      - name: Fetch latest changes and push again
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git fetch origin $BRANCH_NAME
+          git push origin $BRANCH_NAME
+
+      # Compare feature branch with main branch
+      - name: Compare feature branch with main branch
+        if: ${{ steps.files.outputs.has_files == 'true' }}
+        run: |
+          git fetch origin main
+          git diff origin/main
+
       # Create a pull request if there are changed files
       - name: Create Pull Request
         if: ${{ steps.files.outputs.has_files == 'true' }}
