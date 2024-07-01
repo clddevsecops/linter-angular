@@ -14,7 +14,7 @@ jobs:
   prettier:
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: "feature/prettier-${{ github.sha }}"
+      BRANCH_NAME: "feature/prettier-${{ github.sha::7 }}"
     outputs:
       branch_name: ${{ steps.set_branch.outputs.branch_name }}
     steps:
