@@ -38,6 +38,12 @@ jobs:
             echo "has_files=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: extract git commit data
+        uses: rlespinasse/git-commit-data-action@v1.x
+
+      - name: Update author information
+        run: echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
+
       # Create and checkout to a new feature branch if there are changed files
       - name: Create feature branch
         if: ${{ steps.files.outputs.has_files == 'true' }}
@@ -70,29 +76,6 @@ jobs:
         env:
           FILES: ${{ env.FILES }}
 
-      # Verify branch and commit history after Prettier
-      - name: Verify branch and commit history
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          echo "Current branch: $(git branch --show-current)"
-          git log --oneline --graph --all
-          git branch -vv
-          git remote -v
-
-      # Fetch latest changes and push again if necessary
-      - name: Fetch latest changes and push again
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git fetch origin $BRANCH_NAME
-          git push origin $BRANCH_NAME
-
-      # Compare feature branch with main branch
-      - name: Compare feature branch with main branch
-        if: ${{ steps.files.outputs.has_files == 'true' }}
-        run: |
-          git fetch origin main
-          git diff origin/main
-
       # Create a pull request if there are changed files
       - name: Create Pull Request
         if: ${{ steps.files.outputs.has_files == 'true' }}
@@ -103,6 +86,8 @@ jobs:
           branch: ${{ env.BRANCH_NAME }}
           base: main  # Ensure the base branch is main
           title: "Apply Prettier formatting"
+          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
+          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
           body: "This PR applies Prettier formatting to the codebase."
           assignees: "clddevsecops"
 
