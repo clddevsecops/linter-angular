@@ -3,10 +3,6 @@ name: Prettier PR
 on:
   schedule:
     - cron: "45 10 * * *"  # Schedule for 4:15 PM IST (10:45 AM UTC)
-  pull_request:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: write  # This line gives the workflow write permissions
