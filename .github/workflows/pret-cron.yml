@@ -1,0 +1,52 @@
+name: Prettier PR
+
+on:
+  schedule:
+    - cron: "45 10 * * *"  # Schedule for 4:15 PM IST (10:45 AM UTC)
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write  # This line gives the workflow write permissions
+  pull-requests: write  # This line gives the workflow pull request permissions
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    outputs:
+      branch_name: ${{ steps.set_branch.outputs.branch_name }}
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Shorten the SHA and set it as an environment variable
+      - name: Shorten SHA
+        id: vars
+        run: echo "::set-output name=short_sha::${GITHUB_SHA::7}"
+
+      # Create and checkout to a new feature branch if there are changed files
+      - name: Create feature branch
+        id: set_branch
+        run: |
+          BRANCH_NAME="feature/prettier-${{ steps.vars.outputs.short_sha }}"
+          git checkout -b $BRANCH_NAME
+          echo "Created and checked out to branch $BRANCH_NAME"
+          git branch -vv  # Debugging: Verify the branch tracking information
+          echo "::set-output name=branch_name::$BRANCH_NAME"
+
+      # Configure Git user for commits
+      - name: Configure Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Initial commit to create the branch if there are changed files
+      - name: Initial commit
+        run: |
+          git commit --allow-empty -m "Initial commit for Prettier formatting"
+          git push --set-upstream origin ${{ steps.set_branch.outputs.branch_name }}
