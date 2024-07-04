@@ -30,7 +30,6 @@ jobs:
       # Create and checkout to a new feature branch if there are changed files
       - name: Create feature branch
         id: set_branch
-        if: ${{ steps.files.outputs.has_files == 'true' }}
         run: |
           BRANCH_NAME="feature/prettier-${{ steps.vars.outputs.short_sha }}"
           git checkout -b $BRANCH_NAME
