@@ -2,7 +2,7 @@ name: Prettier PR
 
 on:
   schedule:
-    - cron: "0 11 * * *"  # Schedule for 4:30 PM IST (11:00 AM UTC)
+    - cron: "17 11 * * *"  # Schedule for 4:30 PM IST (11:00 AM UTC)
 
 permissions:
   contents: write  # This line gives the workflow write permissions
