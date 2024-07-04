@@ -86,7 +86,6 @@ export default class AuthComponent implements OnInit {
         this.errors = err;
         this.isSubmitting = false;
       },
-
     });
   }
 }
